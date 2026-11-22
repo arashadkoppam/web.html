@@ -18,27 +18,41 @@
   .card {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 24vw; text-align: center;
-    padding: 1.5vw;
+    padding: 1.2vw;
   }
   .category-badge {
     background: #d95f18; color: #fff;
-    font-size: 1.25vw; font-weight: bold; letter-spacing: 0.5px;
-    padding: 0.9vw 1.5vw; margin-bottom: 2.5vw;
-    text-transform: uppercase; line-height: 1.35;
-    min-height: 4.8vw; display: flex; align-items: center; justify-content: center;
+    font-size: 1.2vw; font-weight: bold; letter-spacing: 0.5px;
+    padding: 0.8vw 1.4vw; margin-bottom: 1.8vw;
+    text-transform: uppercase; line-height: 1.3;
+    min-height: 4.5vw; display: flex; align-items: center; justify-content: center;
     width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
+  .arch-frame {
+    width: 16.5vw; height: 21vw;
+    border-radius: 9vw 9vw 0 0;
+    border: 0.45vw solid #4ea8ff;
+    overflow: hidden; background: #1d3557;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    margin-bottom: 1.1vw;
+  }
+  .arch-frame img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top center;
+  }
   .candidate-name {
-    font-size: 2vw; font-weight: bold;
+    font-size: 1.65vw; font-weight: bold;
     text-transform: uppercase; letter-spacing: 0.5px;
     line-height: 1.25;
     text-shadow: 0 2px 6px rgba(0,0,0,0.45);
   }
   .candidate-result {
-    margin-top: 0.8vw; font-size: 1.55vw;
+    margin-top: 0.35vw; font-size: 1.3vw;
     text-transform: uppercase; opacity: 0.95;
     text-shadow: 0 2px 6px rgba(0,0,0,0.45);
   }
+  /* Automatically enlarges text if a row has no photo */
+  .card.no-photo .candidate-name { font-size: 2vw; margin-top: 0.6vw; }
+  .card.no-photo .candidate-result { font-size: 1.55vw; margin-top: 0.6vw; }
 </style>
 </head>
 <body>
@@ -52,6 +66,18 @@
   let candidates = [];
   let currentIndex = 0;
 
+  // Converts any Google Drive share link into a direct image URL
+  function formatPhotoUrl(raw) {
+    if (!raw) return "";
+    const trimmed = raw.trim();
+    const driveMatch = trimmed.match(/(?:\/d\/|id=)([a-zA-Z0-9_-]{20,})/);
+    if (driveMatch && trimmed.includes("drive.google.com")) {
+      return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1000`;
+    }
+    if (trimmed.startsWith("http")) return trimmed;
+    return `photos/${trimmed}`;
+  }
+
   window.handleSheetData = function(response) {
     if (!response || !response.table || !response.table.rows) return;
 
@@ -60,7 +86,8 @@
       return {
         category: cells[0]?.v ? String(cells[0].v).trim() : "",
         name:     cells[1]?.v ? String(cells[1].v).trim() : "",
-        result:   cells[2]?.v ? String(cells[2].v).trim() : ""
+        result:   cells[2]?.v ? String(cells[2].v).trim() : "",
+        photo:    cells[3]?.v ? String(cells[3].v).trim() : ""
       };
     }).filter(c => c.name && c.name.toLowerCase() !== "name");
 
@@ -89,13 +116,22 @@
 
     setTimeout(() => {
       const slice = candidates.slice(currentIndex, currentIndex + 3);
-      board.innerHTML = slice.map(c => `
-        <div class="card">
-          <div class="category-badge">${c.category}</div>
-          <div class="candidate-name">${c.name}</div>
-          <div class="candidate-result">${c.result}</div>
-        </div>
-      `).join("");
+      board.innerHTML = slice.map(c => {
+        const imgSrc = formatPhotoUrl(c.photo);
+        const hasPhoto = Boolean(imgSrc);
+        return `
+          <div class="card ${hasPhoto ? '' : 'no-photo'}">
+            <div class="category-badge">${c.category}</div>
+            ${hasPhoto ? `
+              <div class="arch-frame">
+                <img src="${imgSrc}" alt="${c.name}" onerror="this.parentElement.remove(); this.closest('.card').classList.add('no-photo');">
+              </div>
+            ` : ''}
+            <div class="candidate-name">${c.name}</div>
+            <div class="candidate-result">${c.result}</div>
+          </div>
+        `;
+      }).join("");
 
       board.style.opacity = 1;
       currentIndex = (currentIndex + 3 >= candidates.length) ? 0 : currentIndex + 3;
