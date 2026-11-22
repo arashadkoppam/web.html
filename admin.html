@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sibaq '26 Admin Panel</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+  body {
+    background: #0f172a; color: #f8fafc;
+    min-height: 100vh; padding: 24px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .container {
+    width: 100%; max-width: 540px;
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 12px; padding: 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+  }
+  h1 { font-size: 1.35rem; margin-bottom: 4px; color: #38bdf8; }
+  p.sub { font-size: 0.88rem; color: #94a3b8; margin-bottom: 20px; }
+  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #e2e8f0; }
+  input, select {
+    width: 100%; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid #475569; background: #0f172a; color: #fff;
+    font-size: 0.95rem; margin-bottom: 14px;
+  }
+  input:focus { outline: 2px solid #38bdf8; border-color: transparent; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button {
+    width: 100%; padding: 12px; border: none; border-radius: 8px;
+    background: #d95f18; color: #fff; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: background 0.2s;
+  }
+  button:hover { background: #ea6c1e; }
+  button:disabled { background: #64748b; cursor: not-allowed; }
+  .status {
+    margin-top: 14px; padding: 10px 12px; border-radius: 8px;
+    font-size: 0.9rem; display: none;
+  }
+  .status.ok { display: block; background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; color: #86efac; }
+  .status.err { display: block; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; }
+  .preview-box {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid #334155;
+    font-size: 0.85rem; color: #cbd5e1;
+  }
+  code { background: #0f172a; padding: 2px 6px; border-radius: 4px; color: #7dd3fc; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>DNIC Sibaq '26 — Add Candidate</h1>
+  <p class="sub">Publishes directly to Google Sheets; the TV screen syncs within 30s.</p>
+
+  <form id="candidateForm">
+    <label for="category">Category / Item</label>
+    <input id="category" type="text" list="categoryList" placeholder="e.g. BIDAYA CONVERSATION MLM" required>
+    <datalist id="categoryList">
+      <option value="BIDAYA CONVERSATION MLM">
+      <option value="NUMERICAL APTITUDE BIDAYA">
+      <option value="THANIYA MAPPILLAPATTU">
+      <option value="ULA SPEECH MLM">
+      <option value="CONVERSATION URDU ULA">
+      <option value="ULA DEVOTIONAL SONG">
+      <option value="MULAFAZA ARABIC ULA">
+      <option value="ULA MULAFAZA URDU">
+      <option value="SWARAF IQ">
+    </datalist>
+
+    <label for="name">Candidate Name(s)</label>
+    <input id="name" type="text" placeholder="e.g. ATHIF ASLAM" required>
+
+    <div class="row-2">
+      <div>
+        <label for="result">Position / Grade</label>
+        <input id="result" type="text" placeholder="e.g. 1ST PRIZE" required>
+      </div>
+      <div>
+        <label for="photo">Photo Filename in photos/</label>
+        <input id="photo" type="text" placeholder="e.g. athif.jpg">
+      </div>
+    </div>
+
+    <button type="submit" id="submitBtn">Push to Live TV Board</button>
+  </form>
+
+  <div id="statusMsg" class="status"></div>
+
+  <div class="preview-box">
+    <strong>TV Display Link:</strong> <a href="index.html" style="color:#38bdf8;">Open index.html</a><br>
+    <span style="display:block;margin-top:6px;">Photos must exist inside <code>photos/</code> in your GitHub repo (e.g., <code>photos/athif.jpg</code>).</span>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAXgr3supyUdwsTjelX59XSJASGAy0qLeSVrJIcX6e5obbUCFWrjM2Q1ajGW6FIqTrUQ/exec";
+
+  const form = document.getElementById("candidateForm");
+  const btn = document.getElementById("submitBtn");
+  const statusEl = document.getElementById("statusMsg");
+
+  function showStatus(text, ok) {
+    statusEl.textContent = text;
+    statusEl.className = "status " + (ok ? "ok" : "err");
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!SCRIPT_URL || SCRIPT_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL")) {
+      showStatus("Paste your Google Apps Script Web App URL into SCRIPT_URL first.", false);
+      return;
+    }
+
+    const payload = {
+      category: document.getElementById("category").value.trim().toUpperCase(),
+      name: document.getElementById("name").value.trim().toUpperCase(),
+      result: document.getElementById("result").value.trim().toUpperCase(),
+      photo: document.getElementById("photo").value.trim()
+    };
+
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      showStatus(`Added "${payload.name}" (${payload.result}). TV updates within 30s.`, true);
+      document.getElementById("name").value = "";
+      document.getElementById("result").value = "";
+      document.getElementById("photo").value = "";
+      document.getElementById("name").focus();
+    } catch (err) {
+      showStatus("Could not reach Google Sheet. Check your Apps Script URL.", false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Push to Live TV Board";
+    }
+  });
+</script>
+</body>
+</html>

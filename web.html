@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DNIC Sibaq '26 Results TV</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 100vw; height: 100vh; overflow: hidden;
+    background: #1479e8 url('bg.jpg') center/cover no-repeat;
+    font-family: 'Georgia', serif; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cards-row {
+    display: flex; gap: 6vw; margin-top: 4vh;
+    transition: opacity 0.6s ease;
+  }
+  .card {
+    display: flex; flex-direction: column; align-items: center;
+    width: 22vw; text-align: center;
+  }
+  .category-badge {
+    background: #d95f18; color: #fff;
+    font-size: 1.15vw; font-weight: bold; letter-spacing: 0.5px;
+    padding: 0.7vw 1.4vw; margin-bottom: 1.8vw;
+    text-transform: uppercase; line-height: 1.3;
+    min-height: 4.2vw; display: flex; align-items: center; justify-content: center;
+    width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .arch-frame {
+    width: 16.5vw; height: 21vw;
+    border-radius: 9vw 9vw 0 0;
+    border: 0.45vw solid #4ea8ff;
+    overflow: hidden; background: #1d3557;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .arch-frame img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top center;
+  }
+  .candidate-name {
+    margin-top: 1.1vw; font-size: 1.45vw; font-weight: bold;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .candidate-result {
+    margin-top: 0.25vw; font-size: 1.25vw;
+    text-transform: uppercase; opacity: 0.95;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+</style>
+</head>
+<body>
+
+<div class="cards-row" id="board"></div>
+
+<script>
+  const SHEET_ID = "1tHtmiBkYe_BzPV7IVjqrA9uGy5UGQhFZeCRoGRH9-Z4";
+  const SLIDE_SECONDS = 7; // Seconds per 3-candidate slide
+
+  let candidates = [];
+  let currentIndex = 0;
+
+  // JSONP callback (bypasses CORS when running directly from file://)
+  window.handleSheetData = function(response) {
+    if (!response || !response.table || !response.table.rows) return;
+
+    const parsed = response.table.rows.map(row => {
+      const cells = row.c || [];
+      return {
+        category: cells[0]?.v ? String(cells[0].v).trim() : "",
+        name:     cells[1]?.v ? String(cells[1].v).trim() : "",
+        result:   cells[2]?.v ? String(cells[2].v).trim() : "",
+        photo:    cells[3]?.v ? String(cells[3].v).trim() : ""
+      };
+    }).filter(c => c.name && c.name.toLowerCase() !== "name");
+
+    if (parsed.length) {
+      candidates = parsed;
+      if (document.getElementById("board").innerHTML === "") {
+        renderSlide();
+      }
+    }
+  };
+
+  function fetchResults() {
+    const oldScript = document.getElementById("gviz-script");
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement("script");
+    script.id = "gviz-script";
+    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:handleSheetData&t=${Date.now()}`;
+    document.body.appendChild(script);
+  }
+
+  function renderSlide() {
+    if (!candidates.length) return;
+    const board = document.getElementById("board");
+    board.style.opacity = 0;
+
+    setTimeout(() => {
+      const slice = candidates.slice(currentIndex, currentIndex + 3);
+      board.innerHTML = slice.map(c => {
+        const imgSrc = c.photo.startsWith("http") ? c.photo : `photos/${c.photo}`;
+        return `
+          <div class="card">
+            <div class="category-badge">${c.category}</div>
+            <div class="arch-frame">
+              <img src="${imgSrc}" alt="${c.name}" onerror="this.style.display='none'">
+            </div>
+            <div class="candidate-name">${c.name}</div>
+            <div class="candidate-result">${c.result}</div>
+          </div>
+        `;
+      }).join("");
+
+      board.style.opacity = 1;
+      currentIndex = (currentIndex + 3 >= candidates.length) ? 0 : currentIndex + 3;
+    }, 500);
+  }
+
+  fetchResults();
+  setInterval(fetchResults, 30000); // Auto-syncs new rows every 30 seconds
+  setInterval(renderSlide, SLIDE_SECONDS * 1000);
+</script>
+</body>
+</html>
