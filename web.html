@@ -14,14 +14,15 @@
     display: flex; align-items: center; justify-content: center;
   }
   .cards-row {
-    display: flex; gap: 3.5vw; margin-top: 6vh;
+    display: flex; gap: 3.2vw; margin-top: 6vh;
     transition: opacity 0.6s ease;
   }
-  /* Main Teal Card */
+
+  /* Base Card Layout */
   .card {
     position: relative;
-    width: 24.5vw; height: 39.5vw;
-    background: #289396;
+    width: 25vw; height: 39.5vw;
+    background: var(--card-bg);
     border-radius: 2vw;
     display: flex; flex-direction: column; align-items: center;
     padding: 3.6vw 1.6vw 1.2vw;
@@ -29,37 +30,63 @@
     text-align: center;
     overflow: visible;
   }
-  /* Top Golden Teardrop Badge */
+
+  /* Card Color Themes matching your reference */
+  .card.theme-0 {
+    --card-bg: #4b439c;
+    --badge-bg: #f6b11a;
+    --badge-stroke: #fff;
+    --penta-bg: #26a69a;
+    --num-color: #4b439c;
+  }
+  .card.theme-1 {
+    --card-bg: #f48622;
+    --badge-bg: #4b439c;
+    --badge-stroke: #fff;
+    --penta-bg: #289396;
+    --num-color: #f48622;
+  }
+  .card.theme-2 {
+    --card-bg: #289396;
+    --badge-bg: #f48622;
+    --badge-stroke: #fff;
+    --penta-bg: #f48622;
+    --num-color: #289396;
+  }
+
+  /* Top Teardrop Badge */
   .top-badge {
     position: absolute; top: -2.1vw; left: 50%;
     transform: translateX(-50%) rotate(-45deg);
     width: 4.4vw; height: 4.4vw;
-    background: #fdb813;
+    background: var(--badge-bg);
     border-radius: 50% 50% 50% 0;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.22);
     z-index: 3;
   }
   .top-badge svg {
     transform: rotate(45deg);
     width: 2.2vw; height: 2.2vw;
-    stroke: #fff; fill: none; stroke-width: 2.2;
+    stroke: var(--badge-stroke); fill: none; stroke-width: 2.2;
   }
-  /* Category Title */
+
+  /* Category / Header Title */
   .category-title {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.32vw; font-weight: 700;
+    font-size: 1.28vw; font-weight: 700;
     letter-spacing: 0.6px; text-transform: uppercase;
     line-height: 1.25; min-height: 3.2vw;
     display: flex; align-items: center; justify-content: center;
     z-index: 2;
   }
+
   /* Pentagon Frame */
   .pentagon-wrap {
     position: relative;
     width: 14.2vw; height: 13.6vw;
     margin: 0.8vw 0 0.7vw;
-    background: #3ebdb8;
+    background: var(--penta-bg);
     clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
     display: flex; align-items: flex-end; justify-content: center;
     z-index: 2;
@@ -68,6 +95,7 @@
     width: 100%; height: 100%;
     object-fit: cover; object-position: top center;
   }
+
   /* Decorative Sparkles */
   .sparkle {
     position: absolute;
@@ -81,14 +109,14 @@
   /* Candidate Name */
   .candidate-name {
     font-family: 'Fredoka', 'Trebuchet MS', sans-serif;
-    font-size: 1.75vw; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 1px;
+    font-size: 1.7vw; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
     line-height: 1.15; margin-top: auto; margin-bottom: 1.2vw;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.18);
+    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
     z-index: 2;
   }
   .card.no-photo .candidate-name {
-    font-size: 2.15vw;
+    font-size: 2.1vw;
     margin: auto 0;
   }
 
@@ -106,6 +134,7 @@
     display: flex; align-items: flex-start; justify-content: center;
     z-index: 2;
   }
+
   /* Overlapping Position & Grade Circles */
   .badges-group {
     display: flex; gap: 0.7vw;
@@ -117,7 +146,8 @@
   .stat-circle {
     width: 4.7vw; height: 4.7vw;
     border-radius: 50%;
-    background: #f5f2eb; color: #289396;
+    background: #f5f2eb;
+    color: var(--num-color);
     font-family: 'Georgia', serif;
     font-size: 2.4vw; font-weight: bold;
     display: flex; align-items: center; justify-content: center;
@@ -153,7 +183,6 @@
     return `photos/${trimmed}`;
   }
 
-  // Extracts Position (1, 2, 3) and Grade (A, B, C) from any Result string
   function parseResultBadges(resultText) {
     const upper = (resultText || "").toUpperCase();
     let position = "";
@@ -207,13 +236,14 @@
 
     setTimeout(() => {
       const slice = candidates.slice(currentIndex, currentIndex + 3);
-      board.innerHTML = slice.map(c => {
+      board.innerHTML = slice.map((c, idx) => {
         const imgSrc = formatPhotoUrl(c.photo);
         const hasPhoto = Boolean(imgSrc);
         const { position, grade } = parseResultBadges(c.result);
+        const themeClass = `theme-${idx % 3}`;
 
         return `
-          <div class="card ${hasPhoto ? '' : 'no-photo'}">
+          <div class="card ${themeClass} ${hasPhoto ? '' : 'no-photo'}">
             <div class="top-badge">
               <svg viewBox="0 0 24 24">
                 <path d="M3 7l9-4 9 4M4 7v11h16V7M4 11h16M12 11v7M8 14h2M14 14h2"/>
