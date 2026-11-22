@@ -16,37 +16,28 @@
     transition: opacity 0.6s ease;
   }
   .card {
-    display: flex; flex-direction: column; align-items: center;
-    width: 22vw; text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 24vw; text-align: center;
+    padding: 1.5vw;
   }
   .category-badge {
     background: #d95f18; color: #fff;
-    font-size: 1.15vw; font-weight: bold; letter-spacing: 0.5px;
-    padding: 0.7vw 1.4vw; margin-bottom: 1.8vw;
-    text-transform: uppercase; line-height: 1.3;
-    min-height: 4.2vw; display: flex; align-items: center; justify-content: center;
+    font-size: 1.25vw; font-weight: bold; letter-spacing: 0.5px;
+    padding: 0.9vw 1.5vw; margin-bottom: 2.5vw;
+    text-transform: uppercase; line-height: 1.35;
+    min-height: 4.8vw; display: flex; align-items: center; justify-content: center;
     width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
-  .arch-frame {
-    width: 16.5vw; height: 21vw;
-    border-radius: 9vw 9vw 0 0;
-    border: 0.45vw solid #4ea8ff;
-    overflow: hidden; background: #1d3557;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .arch-frame img {
-    width: 100%; height: 100%; object-fit: cover; object-position: top center;
-  }
   .candidate-name {
-    margin-top: 1.1vw; font-size: 1.45vw; font-weight: bold;
+    font-size: 2vw; font-weight: bold;
     text-transform: uppercase; letter-spacing: 0.5px;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    line-height: 1.25;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.45);
   }
   .candidate-result {
-    margin-top: 0.25vw; font-size: 1.25vw;
+    margin-top: 0.8vw; font-size: 1.55vw;
     text-transform: uppercase; opacity: 0.95;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    text-shadow: 0 2px 6px rgba(0,0,0,0.45);
   }
 </style>
 </head>
@@ -56,12 +47,11 @@
 
 <script>
   const SHEET_ID = "1tHtmiBkYe_BzPV7IVjqrA9uGy5UGQhFZeCRoGRH9-Z4";
-  const SLIDE_SECONDS = 7; // Seconds per 3-candidate slide
+  const SLIDE_SECONDS = 7;
 
   let candidates = [];
   let currentIndex = 0;
 
-  // JSONP callback (bypasses CORS when running directly from file://)
   window.handleSheetData = function(response) {
     if (!response || !response.table || !response.table.rows) return;
 
@@ -70,8 +60,7 @@
       return {
         category: cells[0]?.v ? String(cells[0].v).trim() : "",
         name:     cells[1]?.v ? String(cells[1].v).trim() : "",
-        result:   cells[2]?.v ? String(cells[2].v).trim() : "",
-        photo:    cells[3]?.v ? String(cells[3].v).trim() : ""
+        result:   cells[2]?.v ? String(cells[2].v).trim() : ""
       };
     }).filter(c => c.name && c.name.toLowerCase() !== "name");
 
@@ -100,19 +89,13 @@
 
     setTimeout(() => {
       const slice = candidates.slice(currentIndex, currentIndex + 3);
-      board.innerHTML = slice.map(c => {
-        const imgSrc = c.photo.startsWith("http") ? c.photo : `photos/${c.photo}`;
-        return `
-          <div class="card">
-            <div class="category-badge">${c.category}</div>
-            <div class="arch-frame">
-              <img src="${imgSrc}" alt="${c.name}" onerror="this.style.display='none'">
-            </div>
-            <div class="candidate-name">${c.name}</div>
-            <div class="candidate-result">${c.result}</div>
-          </div>
-        `;
-      }).join("");
+      board.innerHTML = slice.map(c => `
+        <div class="card">
+          <div class="category-badge">${c.category}</div>
+          <div class="candidate-name">${c.name}</div>
+          <div class="candidate-result">${c.result}</div>
+        </div>
+      `).join("");
 
       board.style.opacity = 1;
       currentIndex = (currentIndex + 3 >= candidates.length) ? 0 : currentIndex + 3;
@@ -120,7 +103,7 @@
   }
 
   fetchResults();
-  setInterval(fetchResults, 30000); // Auto-syncs new rows every 30 seconds
+  setInterval(fetchResults, 30000);
   setInterval(renderSlide, SLIDE_SECONDS * 1000);
 </script>
 </body>
