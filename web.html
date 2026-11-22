@@ -2,36 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DNIC Sibaq '26 Results TV</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Playfair+Display:wght@700&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    width: 100vw; height: 100vh; overflow: hidden;
-    background: #1479e8 url('bg.jpg') center/cover no-repeat;
+    width: 100vw; min-height: 100vh; overflow-x: hidden; overflow-y: hidden;
+    background: #1479e8 url('bg.jpg') center/cover fixed no-repeat;
     font-family: 'Georgia', serif; color: #fff;
     display: flex; align-items: center; justify-content: center;
   }
   .cards-row {
-    display: flex; gap: 3.2vw; margin-top: 6vh;
+    display: flex; gap: 3.2vw; margin-top: 5.5vh;
     transition: opacity 0.6s ease;
   }
 
-  /* Base Card Layout */
+  /* Main Card */
   .card {
     position: relative;
-    width: 25vw; height: 39.5vw;
+    width: 26vw; height: 41.5vw;
     background: var(--card-bg);
     border-radius: 2vw;
     display: flex; flex-direction: column; align-items: center;
-    padding: 3.6vw 1.6vw 1.2vw;
+    padding: 3.5vw 1.6vw 1.2vw;
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
     text-align: center;
     overflow: visible;
   }
 
-  /* Card Color Themes matching your reference */
+  /* 3 Distinct Card Themes */
   .card.theme-0 {
     --card-bg: #4b439c;
     --badge-bg: #f6b11a;
@@ -71,29 +72,30 @@
     stroke: var(--badge-stroke); fill: none; stroke-width: 2.2;
   }
 
-  /* Category / Header Title */
+  /* Category Title */
   .category-title {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.28vw; font-weight: 700;
+    font-size: 1.32vw; font-weight: 700;
     letter-spacing: 0.6px; text-transform: uppercase;
     line-height: 1.25; min-height: 3.2vw;
     display: flex; align-items: center; justify-content: center;
     z-index: 2;
   }
 
-  /* Pentagon Frame */
+  /* Larger Pentagon Frame */
   .pentagon-wrap {
     position: relative;
-    width: 14.2vw; height: 13.6vw;
-    margin: 0.8vw 0 0.7vw;
+    width: 18.8vw; height: 17.8vw;
+    margin: 0.9vw 0 1.2vw;
     background: var(--penta-bg);
     clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-    display: flex; align-items: flex-end; justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     z-index: 2;
   }
   .pentagon-wrap img {
     width: 100%; height: 100%;
-    object-fit: cover; object-position: top center;
+    object-fit: cover;
+    object-position: 50% 25%;
   }
 
   /* Decorative Sparkles */
@@ -103,26 +105,30 @@
     clip-path: polygon(50% 0%, 56% 44%, 100% 50%, 56% 56%, 50% 100%, 44% 56%, 0% 50%, 44% 44%);
     pointer-events: none; z-index: 2;
   }
-  .sparkle.right { width: 4.5vw; height: 4.5vw; top: 8.5vw; right: 1.4vw; }
-  .sparkle.left  { width: 3.8vw; height: 3.8vw; top: 18.2vw; left: 1.8vw; }
+  .sparkle.right { width: 4.5vw; height: 4.5vw; top: 8.2vw; right: 1.1vw; }
+  .sparkle.left  { width: 3.8vw; height: 3.8vw; top: 19.5vw; left: 1.3vw; }
 
-  /* Candidate Name */
+  /* Candidate Name cleanly above the badge strip */
   .candidate-name {
     font-family: 'Fredoka', 'Trebuchet MS', sans-serif;
-    font-size: 1.7vw; font-weight: 700;
+    font-size: 1.85vw; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.8px;
-    line-height: 1.15; margin-top: auto; margin-bottom: 1.2vw;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    line-height: 1.2;
+    margin-top: 0.2vw;
+    margin-bottom: 2.8vw;
+    padding: 0 0.5vw;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.22);
     z-index: 2;
   }
   .card.no-photo .candidate-name {
-    font-size: 2.1vw;
-    margin: auto 0;
+    font-size: 2.2vw;
+    margin: auto 0 3.2vw;
   }
 
   /* Bottom Desert Dune Strip */
   .dune-footer {
     position: relative;
+    margin-top: auto;
     width: calc(100% + 3.2vw);
     height: 7.4vw;
     margin-bottom: -1.2vw;
@@ -137,19 +143,19 @@
 
   /* Overlapping Position & Grade Circles */
   .badges-group {
-    display: flex; gap: 0.7vw;
+    display: flex; gap: 0.75vw;
     margin-top: -1.7vw;
   }
   .stat-item {
     display: flex; flex-direction: column; align-items: center;
   }
   .stat-circle {
-    width: 4.7vw; height: 4.7vw;
+    width: 4.6vw; height: 4.6vw;
     border-radius: 50%;
     background: #f5f2eb;
     color: var(--num-color);
     font-family: 'Georgia', serif;
-    font-size: 2.4vw; font-weight: bold;
+    font-size: 2.35vw; font-weight: bold;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.22);
   }
@@ -158,6 +164,74 @@
     font-size: 0.9vw; font-weight: bold;
     color: #fff; letter-spacing: 0.3px;
     text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  }
+
+  /* Phone View (Screens up to 768px wide) */
+  @media (max-width: 768px) {
+    body {
+      height: auto; min-height: 100vh;
+      overflow-y: auto;
+      align-items: flex-start;
+      padding: 44px 16px 40px;
+    }
+    .cards-row {
+      flex-direction: column;
+      align-items: center;
+      gap: 44px;
+      margin-top: 8px;
+      width: 100%;
+    }
+    .card {
+      width: 100%; max-width: 350px;
+      height: auto; min-height: 430px;
+      border-radius: 24px;
+      padding: 44px 18px 16px;
+    }
+    .top-badge {
+      top: -26px;
+      width: 52px; height: 52px;
+    }
+    .top-badge svg {
+      width: 26px; height: 26px;
+    }
+    .category-title {
+      font-size: 16px;
+      min-height: 40px;
+      margin-bottom: 8px;
+    }
+    .pentagon-wrap {
+      width: 210px; height: 198px;
+      margin: 8px 0 14px;
+    }
+    .sparkle.right { width: 46px; height: 46px; top: 90px; right: 12px; }
+    .sparkle.left  { width: 40px; height: 40px; top: 210px; left: 14px; }
+    .candidate-name {
+      font-size: 23px;
+      margin-top: 4px;
+      margin-bottom: 34px;
+    }
+    .card.no-photo .candidate-name {
+      font-size: 26px;
+      margin: 36px 0 42px;
+    }
+    .dune-footer {
+      width: calc(100% + 36px);
+      height: 86px;
+      margin-bottom: -16px;
+      border-radius: 0 0 24px 24px;
+    }
+    .badges-group {
+      gap: 10px;
+      margin-top: -22px;
+    }
+    .stat-circle {
+      width: 54px; height: 54px;
+      font-size: 27px;
+    }
+    .stat-label {
+      font-size: 11px;
+      margin-top: 4px;
+    }
   }
 </style>
 </head>
